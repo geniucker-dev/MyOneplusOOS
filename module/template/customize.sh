@@ -70,7 +70,7 @@ for file in $(unzip -l "$ZIPFILE" | awk '{print $4}' | grep "^system/product/" |
   extract "$ZIPFILE" "$file" "$MODPATH"
 done
 
-HAS32BIT=false && [ $(getprop ro.product.cpu.abilist32) ] && HAS32BIT=true
+HAS32BIT=false && ([ $(getprop ro.product.cpu.abilist32) ] || [ $(getprop ro.system.product.cpu.abilist32) ]) && HAS32BIT=true
 
 mkdir "$MODPATH/zygisk"
 
@@ -94,3 +94,6 @@ else
   extract "$ZIPFILE" "lib/arm64-v8a/lib$SONAME.so" "$MODPATH/zygisk" true
   mv "$MODPATH/zygisk/lib$SONAME.so" "$MODPATH/zygisk/arm64-v8a.so"
 fi
+
+ui_print "- Setting permissions"
+set_perm_recursive "$MODPATH" 0 0 0755 0644
