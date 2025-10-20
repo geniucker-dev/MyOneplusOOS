@@ -3,5 +3,5 @@ name=${moduleName}
 version=${versionName}
 versionCode=${versionCode}
 author=geniucker-dev
-description=Fix Oneplus Wallet for OxygenOS 14/15
-updateJson=https://raw.githubusercontent.com/geniucker-dev/MyOnePlusOOS/main/update.json
+description=MyOneplusOOS
+updateJson=https://raw.githubusercontent.com/geniucker-dev/MyOneplusOOS/main/update.json

@@ -78,12 +78,12 @@ jobs:
         run: |
           version="${{ needs.setup.outputs.version }}"
           versionCode="${{ needs.setup.outputs.versionCode }}"
-          zipUrl="https://github.com/geniucker-dev/MyOnePlusOOS/releases/download/${version}/${{ steps.zip.outputs.release }}"
+          zipUrl="https://github.com/geniucker-dev/MyOneplusOOS/releases/download/${version}/${{ steps.zip.outputs.release }}"
           echo '{
             "version": "'${version}'",
             "versionCode": '${versionCode}',
             "zipUrl": "'${zipUrl}'",
-            "changelog": "https://raw.githubusercontent.com/geniucker-dev/MyOnePlusOOS/main/changelog.md"
+            "changelog": "https://raw.githubusercontent.com/geniucker-dev/MyOneplusOOS/main/changelog.md"
           }' > update.json
 
           git config --global user.name "github-actions[bot]"

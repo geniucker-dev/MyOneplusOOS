@@ -15,7 +15,7 @@ using zygisk::Api;
 using zygisk::AppSpecializeArgs;
 using zygisk::ServerSpecializeArgs;
 
-#define LOG_TAG "MyOnePlusOOS"
+#define LOG_TAG "MyOneplusOOS"
 
 #ifdef NDEBUG
 #define LOGD(...) ((void)0)
