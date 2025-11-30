@@ -48,20 +48,30 @@ jobs:
           path: output/my_stock.img
           key: ${{ steps.setup.outputs.FILENAME }}-my_stock
       
-      - name: Restore cached my_heytap.img
+      - name: restore cached my_heytap.img
         id: restore_cache_my_heytap
         uses: actions/cache/restore@v4
         with:
           path: output/my_heytap.img
-          key: ${{ steps.setup.outputs.FILENAME }}-my_heytap
+          key: ${{ steps.setup.outputs.filename }}-my_heytap
 
-      - name: Download my_stock and my_heytap partition from the OTA update
+      - name: restore cached odm.img
+        id: restore_cache_odm
+        uses: actions/cache/restore@v4
+        with:
+          path: output/odm.img
+          key: ${{ steps.setup.outputs.filename }}-odm
+
+      - name: Download my_stock, my_heytap and odm partition from the OTA update
         run: |
           if [ ! -f output/my_stock.img ]; then
             python -m payload_dumper --partitions my_stock "${{ github.event.inputs.url }}"
           fi
           if [ ! -f output/my_heytap.img ]; then
             python -m payload_dumper --partitions my_heytap "${{ github.event.inputs.url }}"
+          fi
+          if [ ! -f output/odm.img ]; then
+            python -m payload_dumper --partitions odm "${{ github.event.inputs.url }}"
           fi
 
       - name: Save cache my_stock.img
@@ -79,6 +89,14 @@ jobs:
         with:
           path: output/my_heytap.img
           key: ${{ steps.restore_cache_my_heytap.outputs.cache-primary-key }}
+
+      - name: Save cache odm.img
+        if: ${{ steps.restore_cache_odm.outputs.cache-hit != 'true' }}
+        id: save_cache_odm
+        uses: actions/cache/save@v4
+        with:
+          path: output/odm.img
+          key: ${{ steps.restore_cache_odm.outputs.cache-primary-key }}
 
       - name: Update files
         run: |
@@ -150,7 +168,25 @@ jobs:
           # unmount images
           umount mnt/my_stock
           umount mnt/my_heytap
-    
+
+          # odm files
+          # mount odm image
+          mkdir -p mnt/odm
+          sudo /tmp/erofs-utils/fuse.erofs output/odm.img mnt
+
+          # list files needed
+          sudo su -c "cd mnt;find . -name '*eid*' -exec ls -lZ {} \;"
+
+          # update files
+          if [ -d odm ]; then
+            sudo rm -rf odm
+          fi
+          mkdir -p odm
+          sudo su -c "cd mnt; find . -name '*eid*' -exec cp --parents {} ../odm/ \;"
+
+          # unmount image
+          sudo umount mnt
+
       - name: Cleanup
         run: |
           rm -rf mnt
