@@ -70,6 +70,8 @@ ui_print "- Extracting apps"
 for file in $(unzip -l "$ZIPFILE" | awk '{print $4}' | grep "^system/" | grep -v "/$" | grep -v ".sha256"); do
   extract "$ZIPFILE" "$file" "$MODPATH"
 done
+# mv system/odm to system/vendor for better colmpatibility
+mv "$MODPATH/system/odm" "$MODPATH/system/vendor"
 # extract files in eid/
 for file in $(unzip -l "$ZIPFILE" | awk '{print $4}' | grep "^eid/" | grep -v "/$" | grep -v ".sha256"); do
   extract "$ZIPFILE" "$file" "$MODPATH"
@@ -106,5 +108,11 @@ set_perm_recursive "$MODPATH/system/product" 0 0 0755 0644
 set_perm_recursive "$MODPATH/eid" 0 0 0755 0644
 set_perm_recursive "$MODPATH/eid/bin" 0 0 0755 0755
 
-setperm_recursive "$MODPATH/system/odm" 0 0 0755 0644 u:object_r:vendor_file:s0
-set_perm_recursive "$MODPATH/system/odm/etc" 0 0 0755 0644 u:object_r:vendor_configs_file:s0
+if [ -d "$MODPATH/system/vendor" ]; then
+  set_perm_recursive "$MODPATH/system/vendor" 0 0 0755 0644 u:object_r:vendor_file:s0
+  set_perm_recursive "$MODPATH/system/vendor/etc" 0 0 0755 0644 u:object_r:vendor_configs_file:s0
+fi
+if [ -d "$MODPATH/system/odm" ]; then
+  setperm_recursive "$MODPATH/system/odm" 0 0 0755 0644 u:object_r:vendor_file:s0
+  set_perm_recursive "$MODPATH/system/odm/etc" 0 0 0755 0644 u:object_r:vendor_configs_file:s0
+fi
