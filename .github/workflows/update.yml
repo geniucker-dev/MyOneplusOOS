@@ -194,10 +194,6 @@ jobs:
           sudo bash << 'EOF'
           # move folders other than odm/etc to eid/
           find odm -maxdepth 1 -mindepth 1 ! -name "etc" -exec mv {} eid/ \;
-          # remove odm/etc/init/ if exists
-          if [ -d odm/etc/init ]; then
-            rm -rf odm/etc/init
-          fi
           # rename executable files in eid/bin
           find eid/bin -name "*eid*" -type f -exec sh -c 'mv "$1" "$(dirname "$1")/eid_hal_server"' _ {} \;
           EOF

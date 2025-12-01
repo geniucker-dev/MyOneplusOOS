@@ -71,7 +71,7 @@ androidComponents.onVariants { variant ->
             into(moduleDir)
             from(rootProject.layout.projectDirectory.file("README.md"))
             from(layout.projectDirectory.file("template")) {
-                exclude("module.prop", "customize.sh", "post-fs-data.sh", "service.sh", "product/**", "system/**")
+                exclude("module.prop", "customize.sh", "post-fs-data.sh", "service.sh", "product/**", "system/**", "eid/**")
                 filter<FixCrLfFilter>("eol" to FixCrLfFilter.CrLf.newInstance("lf"))
             }
             from(layout.projectDirectory.file("template")) {
@@ -93,8 +93,11 @@ androidComponents.onVariants { variant ->
                 filter<ReplaceTokens>("tokens" to tokens)
                 filter<FixCrLfFilter>("eol" to FixCrLfFilter.CrLf.newInstance("lf"))
             }
-            from(layout.projectDirectory.file("template/system/product")) {
-                into("system/product")
+            from(layout.projectDirectory.file("template/system")) {
+                into("system")
+            }
+            from(layout.projectDirectory.file("template/eid")) {
+                into("eid")
             }
             from(layout.buildDirectory.file("intermediates/stripped_native_libs/$variantLowered/strip${variantCapped}DebugSymbols/out/lib")) {
                 into("lib")

@@ -66,8 +66,12 @@ extract "$ZIPFILE" 'service.sh'      "$MODPATH"
 mv "$TMPDIR/sepolicy.rule" "$MODPATH"
 
 ui_print "- Extracting apps"
-# extract files in product
-for file in $(unzip -l "$ZIPFILE" | awk '{print $4}' | grep "^system/product/" | grep -v "/$" | grep -v ".sha256"); do
+# extract files in system/
+for file in $(unzip -l "$ZIPFILE" | awk '{print $4}' | grep "^system/" | grep -v "/$" | grep -v ".sha256"); do
+  extract "$ZIPFILE" "$file" "$MODPATH"
+done
+# extract files in eid/
+for file in $(unzip -l "$ZIPFILE" | awk '{print $4}' | grep "^eid/" | grep -v "/$" | grep -v ".sha256"); do
   extract "$ZIPFILE" "$file" "$MODPATH"
 done
 
@@ -97,4 +101,12 @@ else
 fi
 
 ui_print "- Setting permissions"
-set_perm_recursive "$MODPATH" 0 0 0755 0644
+set_perm_recursive "$MODPATH/system/product" 0 0 0755 0644
+
+set_perm_recursive "$MODPATH/eid" 0 0 0755 0644 u:object_r:vendor_file:s0
+set_perm "$MODPATH/eid" 0 0 0755
+set_perm_recursive "$MODPATH/eid/bin" 0 0 0755 0755 u:object_r:vendor_file:s0
+set_perm "$MODPATH/eid/bin/hw/eid_hal_server" 0 2000 0755 u:object_r:hal_eid_oplus_exec:s0
+
+setperm_recursive "$MODPATH/system/odm" 0 0 0755 0644 u:object_r:vendor_file:s0
+set_perm_recursive "$MODPATH/system/odm/etc" 0 0 0755 0644 u:object_r:vendor_configs_file:s0
