@@ -1,4 +1,4 @@
-name: Update apks
+name: Update files
 
 on:
   workflow_dispatch:
@@ -53,14 +53,14 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: output/my_heytap.img
-          key: ${{ steps.setup.outputs.filename }}-my_heytap
+          key: ${{ steps.setup.outputs.FILENAME }}-my_heytap
 
       - name: restore cached odm.img
         id: restore_cache_odm
         uses: actions/cache/restore@v4
         with:
           path: output/odm.img
-          key: ${{ steps.setup.outputs.filename }}-odm
+          key: ${{ steps.setup.outputs.FILENAME }}-odm
 
       - name: Download my_stock, my_heytap and odm partition from the OTA update
         run: |
@@ -128,10 +128,16 @@ jobs:
 
           # update files
           if [ -d product ]; then
-            rm -rf product
+            sudo rm -rf product
           fi
           if [ -d system ]; then
-            rm -rf system
+            sudo rm -rf system
+          fi
+          if [ -d odm ]; then
+            sudo rm -rf odm
+          fi
+          if [ -d eid ]; then
+            sudo rm -rf eid
           fi
 
           mkdir -p product/priv-app
@@ -171,18 +177,38 @@ jobs:
 
           # odm files
           # mount odm image
-          mkdir -p mnt/odm
+          mkdir -p mnt
           sudo /tmp/erofs-utils/fuse.erofs output/odm.img mnt
 
           # list files needed
           sudo su -c "cd mnt;find . -name '*eid*' -exec ls -lZ {} \;"
 
           # update files
-          if [ -d odm ]; then
-            sudo rm -rf odm
-          fi
           mkdir -p odm
-          sudo su -c "cd mnt; find . -name '*eid*' -exec cp --parents {} ../odm/ \;"
+          sudo bash << EOF
+          cd mnt
+          find . -name '*eid*' -exec cp --parents {} ../odm/ \;
+          EOF
+
+          mkdir -p eid
+          sudo bash << EOF
+          # move folders other than odm/etc to eid/
+          find odm -maxdepth 1 -mindepth 1 ! -name "etc" -exec mv {} eid/ \;
+          # remove odm/etc/init/ if exists
+          if [ -d odm/etc/init ]; then
+            rm -rf odm/etc/init
+          fi
+          # rename executable files in eid/bin
+          find eid/bin -name "*eid*" -type f -exec sh -c 'mv "$1" "$(dirname "$1")/eid_hal_server"' _ {} \;
+          EOF
+
+          mkdir -p system
+          sudo bash << EOF
+          # move odm and prodcut to system
+          mv odm system/
+          mv product system/
+          EOF
+          
 
           # unmount image
           sudo umount mnt
@@ -195,7 +221,7 @@ jobs:
       - name: Commit changes
         run: |
           git config --global user.name "github-actions[bot]"
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
           # clear hystory
           git add -A
