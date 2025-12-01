@@ -103,10 +103,8 @@ fi
 ui_print "- Setting permissions"
 set_perm_recursive "$MODPATH/system/product" 0 0 0755 0644
 
-set_perm_recursive "$MODPATH/eid" 0 0 0755 0644 u:object_r:vendor_file:s0
-set_perm "$MODPATH/eid" 0 0 0755
-set_perm_recursive "$MODPATH/eid/bin" 0 0 0755 0755 u:object_r:vendor_file:s0
-set_perm "$MODPATH/eid/bin/hw/eid_hal_server" 0 2000 0755 u:object_r:hal_eid_oplus_exec:s0
+set_perm_recursive "$MODPATH/eid" 0 0 0755 0644
+set_perm_recursive "$MODPATH/eid/bin" 0 0 0755 0755
 
 setperm_recursive "$MODPATH/system/odm" 0 0 0755 0644 u:object_r:vendor_file:s0
 set_perm_recursive "$MODPATH/system/odm/etc" 0 0 0755 0644 u:object_r:vendor_configs_file:s0
