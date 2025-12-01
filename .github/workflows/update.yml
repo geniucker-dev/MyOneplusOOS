@@ -185,13 +185,13 @@ jobs:
 
           # update files
           mkdir -p odm
-          sudo bash << EOF
+          sudo bash << 'EOF'
           cd mnt
-          find . -name '*eid*' -exec cp --parents {} ../odm/ \;
+          find . -name "*eid*" -exec cp --parents {} ../odm/ \;
           EOF
 
           mkdir -p eid
-          sudo bash << EOF
+          sudo bash << 'EOF'
           # move folders other than odm/etc to eid/
           find odm -maxdepth 1 -mindepth 1 ! -name "etc" -exec mv {} eid/ \;
           # remove odm/etc/init/ if exists
@@ -203,7 +203,7 @@ jobs:
           EOF
 
           mkdir -p system
-          sudo bash << EOF
+          sudo bash << 'EOF'
           # move odm and prodcut to system
           mv odm system/
           mv product system/
