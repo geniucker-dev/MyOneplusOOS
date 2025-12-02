@@ -198,8 +198,24 @@ private:
         jclass versionClass = env->FindClass("android/os/Build$VERSION");
         LOGD("versionClass: %p", versionClass);
 
+        if (buildClass == nullptr || versionClass == nullptr) {
+            LOGE("Failed to find Build or Build$VERSION class");
+            if (buildClass) {
+                env->DeleteLocalRef(buildClass);
+            }
+            if (versionClass) {
+                env->DeleteLocalRef(versionClass);
+            }
+            return;
+        }
+
         for (auto &[key, val]: spoofVars) {
+            if (key.empty() || val.empty()) {
+                continue;
+            }
+
             const char *fieldName = key.c_str();
+            bool isVersionField = false;
 
             jfieldID fieldID = env->GetStaticFieldID(buildClass, fieldName, "Ljava/lang/String;");
 
@@ -212,22 +228,25 @@ private:
                     env->ExceptionClear();
                     continue;
                 }
+
+                isVersionField = true;
             }
 
             if (fieldID != nullptr) {
                 const char *value = val.c_str();
                 jstring jValue = env->NewStringUTF(value);
 
-                env->SetStaticObjectField(buildClass, fieldID, jValue);
+                env->SetStaticObjectField(isVersionField ? versionClass : buildClass, fieldID, jValue);
 
                 env->DeleteLocalRef(jValue);
 
                 if (env->ExceptionCheck()) {
                     env->ExceptionClear();
+                    LOGE("%s failed to set field '%s'", isVersionField ? "VERSION" : "Build", fieldName);
                     continue;
                 }
 
-                LOGI("Set '%s' to '%s'", fieldName, value);
+                LOGI("%s set '%s' to '%s'", isVersionField ? "VERSION" : "Build", fieldName, value);
             }
         }
 
